@@ -28,6 +28,11 @@ results/
 *.zip
 graph/
 
+# Large dataset image directories (too big for GitHub)
+data/pope/val2014/
+data/mme/*/
+!data/mme/*/.gitkeep
+
 # OS
 .DS_Store
 Thumbs.db
