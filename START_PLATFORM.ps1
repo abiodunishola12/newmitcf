@@ -25,11 +25,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host ""
-Write-Host "Starting FastAPI backend on http://localhost:8000 ..." -ForegroundColor Green
-Write-Host "  API docs: http://localhost:8000/docs" -ForegroundColor Gray
+Write-Host "Starting FastAPI backend on http://localhost:8080 ..." -ForegroundColor Green
+Write-Host "  API docs: http://localhost:8080/docs" -ForegroundColor Gray
 
 # Start backend in background
-$BackendJob = Start-Process -FilePath $Python -ArgumentList "-m", "uvicorn", "web.backend.main:app", "--reload", "--port", "8000", "--host", "0.0.0.0" -PassThru -NoNewWindow
+$BackendJob = Start-Process -FilePath $Python -ArgumentList "-m", "uvicorn", "web.backend.main:app", "--reload", "--port", "8080", "--host", "0.0.0.0" -PassThru -NoNewWindow
 
 Start-Sleep -Seconds 3
 

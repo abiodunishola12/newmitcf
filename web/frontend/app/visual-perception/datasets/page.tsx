@@ -54,9 +54,8 @@ export default function VPDatasetsPage() {
     <div>
       <div className="mb-6">
         <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Dataset Setup</h2>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-          POPE and MME datasets must be downloaded before any evaluation can run.
-          Datasets are <strong style={{ color: 'var(--text-primary)' }}>not</strong> bundled â€” follow the steps below.
+        <p className=”text-sm mt-1” style={{ color: 'var(--text-muted)' }}>
+          Download status for POPE + MME benchmark datasets. Follow the steps below if a dataset is marked Not ready.
         </p>
       </div>
 

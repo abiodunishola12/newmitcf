@@ -1,0 +1,42 @@
+model:
+  model_id: Qwen/Qwen2.5-VL-3B-Instruct
+  torch_dtype: float16
+  device_map: auto
+  load_in_4bit: true
+  max_new_tokens: 128
+  temperature: 0.0
+  do_sample: false
+
+datasets:
+  pope_dir: data/pope
+  pope_categories:
+    - random
+    - popular
+    - adversarial
+  pope_max_samples: 50
+  mme_dir: data/mme
+  mme_categories:
+    - existence
+    - count
+    - position
+    - color
+    - posters
+    - celebrity
+    - scene
+    - landmark
+    - artwork
+    - OCR
+  mme_max_samples: 50
+experiment:
+  seed: 42
+  output_dir: results/visual_perception
+  max_revision_attempts: 2
+  verification_threshold: 0.70
+  fixed_gate_confidence_threshold: 0.65
+  bootstrap_samples: 2000
+  significance_level: 0.05
+  conditions:
+    - baseline
+    - revision_only
+    - fixed_gate
+    - full_mitcf
