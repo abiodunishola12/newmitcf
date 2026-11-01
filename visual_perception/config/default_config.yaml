@@ -1,0 +1,94 @@
+model:
+  model_id: Qwen/Qwen2.5-VL-3B-Instruct
+  revision: main
+  torch_dtype: float16
+  device_map: auto
+  load_in_4bit: false
+  load_in_8bit: false
+  max_new_tokens: 128
+  temperature: 0.0
+  do_sample: false
+  cache_dir: ''
+datasets:
+  pope_dir: data/pope
+  pope_categories:
+  - random
+  - popular
+  - adversarial
+  pope_max_samples: 500
+  mme_dir: data/mme
+  mme_categories:
+  - existence
+  - count
+  - position
+  - color
+  - posters
+  - celebrity
+  - scene
+  - landmark
+  - artwork
+  - OCR
+  mme_max_samples: 500
+experiment:
+  seed: 42
+  output_dir: results/visual_perception
+  run_id: ''
+  max_revision_attempts: 2
+  verification_threshold: 0.7
+  fixed_gate_confidence_threshold: 0.65
+  bootstrap_samples: 2000
+  significance_level: 0.05
+  conditions:
+  - baseline
+  - revision_only
+  - fixed_gate
+  - full_mitcf
+robustness:
+  enabled: true
+  perturbations:
+  - gaussian_noise
+  - gaussian_blur
+  - brightness
+  - contrast
+  - jpeg_compression
+  - resolution_degradation
+  noise_std_values:
+  - 0.05
+  - 0.1
+  - 0.2
+  blur_sigma_values:
+  - 1.0
+  - 2.0
+  - 4.0
+  brightness_factors:
+  - 0.5
+  - 1.5
+  - 2.0
+  contrast_factors:
+  - 0.3
+  - 0.7
+  - 1.5
+  jpeg_quality_values:
+  - 20
+  - 40
+  - 60
+  resolution_scale_values:
+  - 0.25
+  - 0.5
+  - 0.75
+  seed: 42
+ablation:
+  enabled: true
+  ablations:
+  - full_mitcf
+  - no_fuzzy_gate
+  - no_verification
+  - no_agent_refinement
+  - no_uncertainty_signals
+  - no_hallucination_signals
+  - fixed_thresholds
+ti_weights:
+  hallucination: 0.35
+  bias: 0.15
+  robustness: 0.25
+  decision: 0.25

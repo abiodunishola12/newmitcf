@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-width: 260px;
+  --topbar-height: 56px;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-hover: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --border: #334155;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.sidebar-nav-item {
+  @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer;
+  color: var(--text-secondary);
+}
+
+.sidebar-nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebar-nav-item.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent);
+  border-left: 3px solid var(--accent);
+}
+
+.kpi-card {
+  @apply rounded-xl p-5 border;
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
+.kpi-card:hover {
+  border-color: var(--accent);
+  transition: border-color 0.2s;
+}
+
+.section-header {
+  @apply text-xs font-semibold uppercase tracking-wider px-3 mt-5 mb-1;
+  color: var(--text-muted);
+}
+
+.data-table {
+  @apply w-full text-sm border-collapse;
+}
+
+.data-table th {
+  @apply px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  @apply px-3 py-2;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  color: var(--text-secondary);
+}
+
+.data-table tr:hover td {
+  background: rgba(51, 65, 85, 0.3);
+  color: var(--text-primary);
+}
+
+.btn-primary {
+  @apply px-4 py-2 rounded-lg text-sm font-semibold transition-all;
+  background: var(--accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+}
+
+.badge-accept { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.badge-verify { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.badge-revise { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.badge-escalate { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.badge-refuse  { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
