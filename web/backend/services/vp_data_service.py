@@ -163,7 +163,16 @@ def get_vp_dataset_status() -> Dict[str, Any]:
             "commonsense_reasoning", "numerical_calculation",
             "text_translation", "code_reasoning",
         ]
-        found = {c: (mme_dir / c / "questions_answers_YN.txt").exists() for c in categories}
+        def _cat_ready(c: str) -> bool:
+            cat = mme_dir / c
+            if not cat.exists():
+                return False
+            if (cat / "questions_answers_YN.txt").exists() or (cat / f"{c}.txt").exists():
+                return True
+            # per-image format: at least one .txt paired with an image
+            img_stems = {f.stem for f in cat.glob("*") if f.suffix.lower() in (".jpg", ".jpeg", ".png")}
+            return any((cat / f"{s}.txt").exists() for s in img_stems)
+        found = {c: _cat_ready(c) for c in categories}
         return {
             "categories_found": sum(found.values()),
             "categories_total": len(categories),

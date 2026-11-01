@@ -63,11 +63,12 @@ class MMEAdapter:
         for category in self.categories:
             cat_dir = self.mme_dir / category
             ann_file = self._find_annotation_file(cat_dir)
-            available = cat_dir.exists() and ann_file is not None
+            per_image = ann_file is None and self._is_per_image_format(cat_dir)
+            available = cat_dir.exists() and (ann_file is not None or per_image)
             status["categories"][category] = {
                 "directory": str(cat_dir),
                 "directory_exists": cat_dir.exists(),
-                "annotation_file": str(ann_file) if ann_file else None,
+                "annotation_file": str(ann_file) if ann_file else ("per-image" if per_image else None),
             }
             if available:
                 any_available = True
@@ -88,7 +89,7 @@ class MMEAdapter:
                     "See data/mme/README.md for download instructions."
                 )
             ann_file = self._find_annotation_file(cat_dir)
-            if ann_file is None:
+            if ann_file is None and not self._is_per_image_format(cat_dir):
                 raise FileNotFoundError(
                     f"No annotation file found in MME category {category} at {cat_dir}"
                 )
@@ -109,14 +110,30 @@ class MMEAdapter:
         for candidate in candidates:
             if candidate.exists():
                 return candidate
-        txt_files = list(cat_dir.glob("*.txt"))
-        return txt_files[0] if txt_files else None
+        return None
+
+    def _is_per_image_format(self, cat_dir: Path) -> bool:
+        """Return True if the category uses per-image .txt files (question\tanswer per line)."""
+        txt_files = [f for f in cat_dir.glob("*.txt") if f.name != ".gitkeep"]
+        if not txt_files:
+            return False
+        # Per-image format: txt file shares stem with an image file
+        img_stems = {f.stem for f in cat_dir.glob("*") if f.suffix.lower() in (".jpg", ".jpeg", ".png")}
+        return any(f.stem in img_stems for f in txt_files)
 
     def _parse_category(self, ann_file: Path, category: str, cat_dir: Path) -> List[VisualBenchmarkItem]:
         """Parse MME annotation file.
 
-        MME format per line: <image_filename>\t<question>\t<answer>
+        Supports two formats:
+        - Combined: <image_filename>\\t<question>\\t<answer>  (questions_answers_YN.txt)
+        - Per-image: <question>\\t<answer>  (one .txt per image, sharing the image stem)
         """
+        if ann_file is None:
+            return self._parse_per_image(category, cat_dir)
+        return self._parse_combined(ann_file, category, cat_dir)
+
+    def _parse_combined(self, ann_file: Path, category: str, cat_dir: Path) -> List[VisualBenchmarkItem]:
+        """Parse combined annotation file: <image>\\t<question>\\t<answer>."""
         items: List[VisualBenchmarkItem] = []
         with ann_file.open("r", encoding="utf-8") as handle:
             for line_num, line in enumerate(handle, start=1):
@@ -125,34 +142,51 @@ class MMEAdapter:
                     continue
                 parts = line.split("\t")
                 if len(parts) < 3:
-                    logger.warning("MME %s line %d: expected 3 tab-separated fields, got %d", category, line_num, len(parts))
+                    logger.warning("MME %s line %d: expected 3 fields, got %d", category, line_num, len(parts))
                     continue
-
-                image_name = parts[0].strip()
-                question = parts[1].strip()
-                answer = parts[2].strip().lower()
-
-                image_path = cat_dir / image_name
-                item_id = f"mme_{category}_{image_name}_{line_num}"
-
+                image_name, question, answer = parts[0].strip(), parts[1].strip(), parts[2].strip().lower()
                 items.append(VisualBenchmarkItem(
-                    item_id=item_id,
-                    benchmark="MME",
-                    category=category,
-                    image_path=str(image_path),
-                    question=question,
-                    ground_truth=answer,
-                    answer_type="binary",
-                    choices=["yes", "no"],
-                    metadata={
-                        "mme_category": category,
-                        "image_name": image_name,
-                        "annotation_file": str(ann_file.name),
-                        "line_number": line_num,
-                        "perception": category in MME_PERCEPTION_CATEGORIES,
-                        "cognition": category in MME_COGNITION_CATEGORIES,
-                    },
+                    item_id=f"mme_{category}_{image_name}_{line_num}",
+                    benchmark="MME", category=category,
+                    image_path=str(cat_dir / image_name),
+                    question=question, ground_truth=answer,
+                    answer_type="binary", choices=["yes", "no"],
+                    metadata={"mme_category": category, "image_name": image_name,
+                              "annotation_file": ann_file.name, "line_number": line_num,
+                              "perception": category in MME_PERCEPTION_CATEGORIES,
+                              "cognition": category in MME_COGNITION_CATEGORIES},
                 ))
+        return items
+
+    def _parse_per_image(self, category: str, cat_dir: Path) -> List[VisualBenchmarkItem]:
+        """Parse per-image txt files: <question>\\t<answer> with matching image file."""
+        items: List[VisualBenchmarkItem] = []
+        img_exts = (".jpg", ".jpeg", ".png")
+        img_files = sorted(f for f in cat_dir.iterdir() if f.suffix.lower() in img_exts)
+        for img_path in img_files:
+            txt_path = img_path.with_suffix(".txt")
+            if not txt_path.exists():
+                continue
+            with txt_path.open("r", encoding="utf-8") as fh:
+                for line_num, line in enumerate(fh, start=1):
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    parts = line.split("\t")
+                    if len(parts) < 2:
+                        continue
+                    question, answer = parts[0].strip(), parts[1].strip().lower()
+                    items.append(VisualBenchmarkItem(
+                        item_id=f"mme_{category}_{img_path.name}_{line_num}",
+                        benchmark="MME", category=category,
+                        image_path=str(img_path),
+                        question=question, ground_truth=answer,
+                        answer_type="binary", choices=["yes", "no"],
+                        metadata={"mme_category": category, "image_name": img_path.name,
+                                  "annotation_file": txt_path.name, "line_number": line_num,
+                                  "perception": category in MME_PERCEPTION_CATEGORIES,
+                                  "cognition": category in MME_COGNITION_CATEGORIES},
+                    ))
         return items
 
     def validate(self, items: Optional[List[VisualBenchmarkItem]] = None) -> Dict[str, Any]:
