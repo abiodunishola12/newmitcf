@@ -4,25 +4,41 @@ import { useState, useEffect } from 'react';
 const API = 'http://localhost:8080';
 
 interface POPEStatus {
-  ready: boolean; annotations_found: boolean;
+  ready: boolean;
+  annotations_found: boolean;
   annotation_files: Record<string, boolean>;
-  image_count: number; images_found: boolean;
+  image_count: number;
+  images_found: boolean;
 }
 interface MMEStatus {
-  ready: boolean; categories_found: number; categories_total: number;
+  ready: boolean;
+  categories_found: number;
+  categories_total: number;
   category_status: Record<string, boolean>;
 }
 interface DatasetStatus { pope: POPEStatus; mme: MMEStatus; }
 
 const POPE_STEPS = [
-  { title: 'Clone POPE annotations', code: 'git clone https://github.com/AoiDragon/POPE.git\ncp POPE/output/coco/coco_pope_random.json     data/pope/annotations/\ncp POPE/output/coco/coco_pope_popular.json    data/pope/annotations/\ncp POPE/output/coco/coco_pope_adversarial.json data/pope/annotations/' },
-  { title: 'Download MSCOCO val2014 (~6.6 GB)', code: 'wget http://images.cocodataset.org/zips/val2014.zip\nunzip val2014.zip -d data/pope/' },
+  {
+    title: 'Clone POPE annotations',
+    code: 'git clone https://github.com/AoiDragon/POPE.git\ncp POPE/output/coco/coco_pope_random.json     data/pope/annotations/\ncp POPE/output/coco/coco_pope_popular.json    data/pope/annotations/\ncp POPE/output/coco/coco_pope_adversarial.json data/pope/annotations/',
+  },
+  {
+    title: 'Download MSCOCO val2014 (~6.6 GB)',
+    code: 'wget http://images.cocodataset.org/zips/val2014.zip\nunzip val2014.zip -d data/pope/',
+  },
   { title: 'Verify', code: 'python -m visual_perception.cli validate-data' },
 ];
 
 const MME_STEPS = [
-  { title: 'Request access', code: 'Visit: https://github.com/BradyFU/Awesome-Multimodal-Large-Language-Models/tree/Evaluation\nFollow the download link in the README.' },
-  { title: 'Extract to data/mme/', code: '# After downloading the archive:\nunzip MME_Benchmark.zip -d data/mme/' },
+  {
+    title: 'Request access',
+    code: 'Visit: https://github.com/BradyFU/Awesome-Multimodal-Large-Language-Models/tree/Evaluation\nFollow the download link in the README.',
+  },
+  {
+    title: 'Extract to data/mme/',
+    code: '# After downloading the archive:\nunzip MME_Benchmark.zip -d data/mme/',
+  },
   { title: 'Verify', code: 'python -m visual_perception.cli validate-data' },
 ];
 
@@ -40,14 +56,17 @@ export default function VPDatasetsPage() {
 
   useEffect(() => {
     fetch(`${API}/api/visual-perception/dataset-status`)
-      .then(r => r.json()).then(setStatus)
-      .catch(e => setErr(String(e)))
+      .then(r => r.json())
+      .then(setStatus)
+      .catch((e: unknown) => setErr(String(e)))
       .finally(() => setLoading(false));
   }, []);
 
   function copy(text: string, id: string) {
-    try { navigator.clipboard.writeText(text).then(() => { setCopied(id); setTimeout(() => setCopied(''), 2000); }); }
-    catch { setCopied(''); }
+    navigator.clipboard.writeText(text).then(
+      () => { setCopied(id); setTimeout(() => setCopied(''), 2000); },
+      () => { setCopied(''); },
+    );
   }
 
   return (
@@ -59,8 +78,14 @@ export default function VPDatasetsPage() {
         </p>
       </div>
 
-      {loading && <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Checking dataset statusâ€¦</div>}
-      {err && <div className="text-xs mb-4 p-2 rounded" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>{err}</div>}
+      {loading && (
+        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Checking dataset status...</div>
+      )}
+      {err && (
+        <div className="text-xs mb-4 p-2 rounded" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
+          {err}
+        </div>
+      )}
 
       {status && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -74,13 +99,15 @@ export default function VPDatasetsPage() {
                 {Object.entries(status.pope.annotation_files).map(([f, found]) => (
                   <div key={f} className="flex justify-between">
                     <code style={{ color: 'var(--text-secondary)' }}>{f}.json</code>
-                    <span style={{ color: found ? '#22c55e' : '#ef4444' }}>{found ? 'âœ" found' : 'âœ— missing'}</span>
+                    <span style={{ color: found ? '#22c55e' : '#ef4444' }}>{found ? 'found' : 'missing'}</span>
                   </div>
                 ))}
                 <div className="flex justify-between pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>val2014 images</span>
                   <span style={{ color: status.pope.images_found ? '#22c55e' : '#ef4444' }}>
-                    {status.pope.images_found ? `âœ" ${status.pope.image_count.toLocaleString()} images` : 'âœ— missing'}
+                    {status.pope.images_found
+                      ? `${status.pope.image_count.toLocaleString()} images`
+                      : 'missing'}
                   </span>
                 </div>
               </div>
@@ -88,8 +115,10 @@ export default function VPDatasetsPage() {
             {!status.pope.ready && (
               <div className="space-y-3">
                 {POPE_STEPS.map((step, i) => (
-                  <InstructionCard key={i} step={i + 1} title={step.title} code={step.code}
-                    onCopy={() => copy(step.code, `pope-${i}`)} copied={copied === `pope-${i}`} />
+                  <InstructionCard
+                    key={i} step={i + 1} title={step.title} code={step.code}
+                    onCopy={() => copy(step.code, `pope-${i}`)} copied={copied === `pope-${i}`}
+                  />
                 ))}
               </div>
             )}
@@ -106,7 +135,7 @@ export default function VPDatasetsPage() {
                   <div key={c} className="flex justify-between">
                     <code style={{ color: 'var(--text-secondary)' }}>{c}</code>
                     <span style={{ color: status.mme.category_status[c] ? '#22c55e' : '#64748b' }}>
-                      {status.mme.category_status[c] ? 'âœ"' : 'â€"'}
+                      {status.mme.category_status[c] ? 'ready' : '-'}
                     </span>
                   </div>
                 ))}
@@ -118,8 +147,10 @@ export default function VPDatasetsPage() {
             {!status.mme.ready && (
               <div className="space-y-3">
                 {MME_STEPS.map((step, i) => (
-                  <InstructionCard key={i} step={i + 1} title={step.title} code={step.code}
-                    onCopy={() => copy(step.code, `mme-${i}`)} copied={copied === `mme-${i}`} />
+                  <InstructionCard
+                    key={i} step={i + 1} title={step.title} code={step.code}
+                    onCopy={() => copy(step.code, `mme-${i}`)} copied={copied === `mme-${i}`}
+                  />
                 ))}
               </div>
             )}
@@ -132,14 +163,14 @@ export default function VPDatasetsPage() {
       <div className="kpi-card mt-6" style={{ borderLeft: '3px solid #f59e0b' }}>
         <h4 className="text-sm font-semibold mb-2" style={{ color: '#f59e0b' }}>Model Weights</h4>
         <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
-          <strong>Qwen/Qwen2.5-VL-3B-Instruct</strong> (~7 GB) downloads automatically on first <code>smoke-test</code> run.
-          Alternatively, pre-download with:
+          <strong>Qwen/Qwen2.5-VL-3B-Instruct</strong> (~7 GB) downloads automatically on first{' '}
+          <code>smoke-test</code> run. Alternatively, pre-download with:
         </p>
         <pre className="text-xs p-3 rounded overflow-x-auto" style={{ background: 'rgba(0,0,0,0.3)', color: '#93c5fd' }}>
           huggingface-cli download Qwen/Qwen2.5-VL-3B-Instruct
         </pre>
         <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-          If RTX 3050 OOM at float16 (~5.5 GB), set <code>load_in_4bit: true</code> in
+          If RTX 3050 OOM at float16 (~5.5 GB), set <code>load_in_4bit: true</code> in{' '}
           <code>visual_perception/config/default_config.yaml</code> (~2 GB, requires bitsandbytes).
         </p>
       </div>
@@ -153,27 +184,45 @@ function StatusHeader({ title, ready }: { title: string; ready: boolean }) {
       <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
       <span className="badge text-xs font-bold" style={{
         background: ready ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-        color: ready ? '#22c55e' : '#ef4444', padding: '2px 10px',
+        color: ready ? '#22c55e' : '#ef4444',
+        padding: '2px 10px',
       }}>
-        {ready ? 'âœ" Ready' : 'âœ— Not ready'}
+        {ready ? 'Ready' : 'Not ready'}
       </span>
     </div>
   );
 }
 
-function InstructionCard({ step, title, code, onCopy, copied }: { step: number; title: string; code: string; onCopy: () => void; copied: boolean }) {
+function InstructionCard({ step, title, code, onCopy, copied }: {
+  step: number; title: string; code: string; onCopy: () => void; copied: boolean;
+}) {
   return (
     <div className="kpi-card">
       <div className="flex items-center gap-2 mb-2">
-        <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-          style={{ background: 'var(--accent)', color: 'white' }}>{step}</span>
+        <span
+          className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+          style={{ background: 'var(--accent)', color: 'white' }}
+        >
+          {step}
+        </span>
         <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</span>
       </div>
       <div className="relative">
-        <pre className="text-xs p-3 rounded overflow-x-auto" style={{ background: 'rgba(0,0,0,0.3)', color: '#93c5fd', margin: 0 }}>{code}</pre>
-        <button onClick={onCopy}
+        <pre
+          className="text-xs p-3 rounded overflow-x-auto"
+          style={{ background: 'rgba(0,0,0,0.3)', color: '#93c5fd', margin: 0 }}
+        >
+          {code}
+        </pre>
+        <button
+          onClick={onCopy}
           className="absolute top-2 right-2 text-xs px-2 py-0.5 rounded"
-          style={{ background: 'rgba(255,255,255,0.1)', color: copied ? '#22c55e' : 'var(--text-muted)', border: '1px solid var(--border)' }}>
+          style={{
+            background: 'rgba(255,255,255,0.1)',
+            color: copied ? '#22c55e' : 'var(--text-muted)',
+            border: '1px solid var(--border)',
+          }}
+        >
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
@@ -183,8 +232,11 @@ function InstructionCard({ step, title, code, onCopy, copied }: { step: number; 
 
 function ReadyBanner({ text }: { text: string }) {
   return (
-    <div className="p-3 rounded text-xs" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e' }}>
-      âœ" {text}
+    <div
+      className="p-3 rounded text-xs"
+      style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e' }}
+    >
+      {text}
     </div>
   );
 }
