@@ -54,7 +54,7 @@ export default function VPDatasetsPage() {
     <div>
       <div className="mb-6">
         <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Dataset Setup</h2>
-        <p className=”text-sm mt-1” style={{ color: 'var(--text-muted)' }}>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
           Download status for POPE + MME benchmark datasets. Follow the steps below if a dataset is marked Not ready.
         </p>
       </div>
@@ -74,13 +74,13 @@ export default function VPDatasetsPage() {
                 {Object.entries(status.pope.annotation_files).map(([f, found]) => (
                   <div key={f} className="flex justify-between">
                     <code style={{ color: 'var(--text-secondary)' }}>{f}.json</code>
-                    <span style={{ color: found ? '#22c55e' : '#ef4444' }}>{found ? 'âœ“ found' : 'âœ— missing'}</span>
+                    <span style={{ color: found ? '#22c55e' : '#ef4444' }}>{found ? 'âœ" found' : 'âœ— missing'}</span>
                   </div>
                 ))}
                 <div className="flex justify-between pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>val2014 images</span>
                   <span style={{ color: status.pope.images_found ? '#22c55e' : '#ef4444' }}>
-                    {status.pope.images_found ? `âœ“ ${status.pope.image_count.toLocaleString()} images` : 'âœ— missing'}
+                    {status.pope.images_found ? `âœ" ${status.pope.image_count.toLocaleString()} images` : 'âœ— missing'}
                   </span>
                 </div>
               </div>
@@ -106,7 +106,7 @@ export default function VPDatasetsPage() {
                   <div key={c} className="flex justify-between">
                     <code style={{ color: 'var(--text-secondary)' }}>{c}</code>
                     <span style={{ color: status.mme.category_status[c] ? '#22c55e' : '#64748b' }}>
-                      {status.mme.category_status[c] ? 'âœ“' : 'â€“'}
+                      {status.mme.category_status[c] ? 'âœ"' : 'â€"'}
                     </span>
                   </div>
                 ))}
@@ -155,7 +155,7 @@ function StatusHeader({ title, ready }: { title: string; ready: boolean }) {
         background: ready ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
         color: ready ? '#22c55e' : '#ef4444', padding: '2px 10px',
       }}>
-        {ready ? 'âœ“ Ready' : 'âœ— Not ready'}
+        {ready ? 'âœ" Ready' : 'âœ— Not ready'}
       </span>
     </div>
   );
@@ -184,7 +184,7 @@ function InstructionCard({ step, title, code, onCopy, copied }: { step: number; 
 function ReadyBanner({ text }: { text: string }) {
   return (
     <div className="p-3 rounded text-xs" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e' }}>
-      âœ“ {text}
+      âœ" {text}
     </div>
   );
 }
