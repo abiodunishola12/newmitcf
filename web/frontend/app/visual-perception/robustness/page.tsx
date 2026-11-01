@@ -46,12 +46,13 @@ export default function VPRobustnessPage() {
     if (!selectedRun) return;
     setLoading(true); setRobustRows([]);
     fetch(`${API}/api/visual-perception/runs/${selectedRun}/robustness`)
-      .then(r => r.json()).then(setRobustRows)
-      .catch(e => setErr(String(e)))
+      .then(r => r.json())
+      .then((data: unknown) => setRobustRows(Array.isArray(data) ? (data as Array<Record<string, string>>) : []))
+      .catch((e: unknown) => setErr(String(e)))
       .finally(() => setLoading(false));
   }, [selectedRun]);
 
-  // Group: perturbation â†’ severity â†’ condition â†’ row
+  // Group: perturbation â†' severity â†' condition â†' row
   const byPertSevCond: Record<string, Record<string, Record<string, Record<string, string>>>> = {};
   robustRows.forEach(row => {
     const p = row.perturbation_type ?? '';
@@ -63,7 +64,7 @@ export default function VPRobustnessPage() {
   });
 
   function pct(v: string | undefined) {
-    if (!v) return 'â€”';
+    if (!v) return 'â€"';
     const n = parseFloat(v);
     return isNaN(n) ? v : (n * 100).toFixed(1) + '%';
   }
@@ -94,7 +95,7 @@ export default function VPRobustnessPage() {
                   color: selectedRun === r.run_id ? 'white' : 'var(--text-secondary)',
                   border: `1px solid ${r.has_robustness ? 'var(--accent)' : 'var(--border)'}`,
                 }}>
-                {r.run_id} {r.has_robustness ? 'âœ“' : ''}
+                {r.run_id} {r.has_robustness ? 'âœ"' : ''}
               </button>
             ))}
           </div>
@@ -112,7 +113,7 @@ export default function VPRobustnessPage() {
       {runs.length === 0 && !err && (
         <div className="kpi-card text-center py-8">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No VP runs found.</p>
-          <Link href="/visual-perception/run" style={{ color: 'var(--accent)' }} className="text-sm mt-2 block">Launch evaluation â†’</Link>
+          <Link href="/visual-perception/run" style={{ color: 'var(--accent)' }} className="text-sm mt-2 block">Launch evaluation â†'</Link>
         </div>
       )}
 
@@ -171,7 +172,7 @@ export default function VPRobustnessPage() {
           {PERTURBATIONS.map(p => (
             <div key={p.id} className="text-xs">
               <code style={{ color: '#93c5fd' }}>{p.id}</code>
-              <span style={{ color: 'var(--text-secondary)' }}> â€” {p.desc}</span>
+              <span style={{ color: 'var(--text-secondary)' }}> â€" {p.desc}</span>
             </div>
           ))}
         </div>

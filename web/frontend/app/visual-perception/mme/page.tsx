@@ -40,8 +40,8 @@ export default function VPMMEPage() {
 
   useEffect(() => {
     fetch(`${API}/api/visual-perception/runs`).then(r => r.json())
-      .then((data: Run[]) => { setRuns(data); if (data.length > 0) setSelectedRun(data[0].run_id); })
-      .catch(e => setErr(String(e)));
+      .then((data: unknown) => { const rows = Array.isArray(data) ? (data as Run[]) : []; setRuns(rows); if (rows.length > 0) setSelectedRun(rows[0].run_id); })
+      .catch((e: unknown) => setErr(String(e)));
   }, []);
 
   useEffect(() => {
@@ -51,13 +51,15 @@ export default function VPMMEPage() {
       fetch(`${API}/api/visual-perception/runs/${selectedRun}/category-metrics`).then(r => r.json()),
       fetch(`${API}/api/visual-perception/runs/${selectedRun}/benchmark-metrics`).then(r => r.json()),
     ]).then(([cats, bench]) => {
-      setCatMetrics((cats as Array<Record<string, string>>).filter(r => r.benchmark === 'mme' || r.benchmark === undefined));
-      setBenchMetrics((bench as Array<Record<string, string>>).filter(r => r.benchmark === 'mme' || r.benchmark === undefined));
-    }).catch(e => setErr(String(e)))
+      const catsArr = Array.isArray(cats) ? (cats as Array<Record<string, string>>) : [];
+      const benchArr = Array.isArray(bench) ? (bench as Array<Record<string, string>>) : [];
+      setCatMetrics(catsArr.filter(r => r.benchmark === 'mme' || r.benchmark === undefined));
+      setBenchMetrics(benchArr.filter(r => r.benchmark === 'mme' || r.benchmark === undefined));
+    }).catch((e: unknown) => setErr(String(e)))
       .finally(() => setLoading(false));
   }, [selectedRun]);
 
-  // Lookup: category â†’ condition â†’ row
+  // Lookup: category â†' condition â†' row
   const byCategory: Record<string, Record<string, Record<string, string>>> = {};
   catMetrics.forEach(row => {
     const cat = row.category ?? '';
@@ -72,14 +74,14 @@ export default function VPMMEPage() {
   });
 
   function mmeScore(row: Record<string, string> | undefined): string {
-    if (!row) return 'â€”';
+    if (!row) return 'â€"';
     const s = row.mme_score ?? row.score;
-    if (!s) return 'â€”';
+    if (!s) return 'â€"';
     const n = parseFloat(s);
     return isNaN(n) ? s : n.toFixed(1);
   }
   function pct(v: string | undefined) {
-    if (!v) return 'â€”';
+    if (!v) return 'â€"';
     const n = parseFloat(v);
     return isNaN(n) ? v : (n * 100).toFixed(1) + '%';
   }
@@ -89,8 +91,8 @@ export default function VPMMEPage() {
       <div className="mb-6">
         <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>MME Perception Evaluation</h2>
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-          Multi-modal Model Evaluation â€” 14 categories (10 perception + 4 cognition).
-          Official scoring: accuracyÃ—100 + plus_scoreÃ—100 per category.
+          Multi-modal Model Evaluation â€" 14 categories (10 perception + 4 cognition).
+          Official scoring: accuracyÃ--100 + plus_scoreÃ--100 per category.
         </p>
       </div>
 
@@ -118,7 +120,7 @@ export default function VPMMEPage() {
       {runs.length === 0 && !err && (
         <div className="kpi-card text-center py-8">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No VP runs found.</p>
-          <Link href="/visual-perception/run" style={{ color: 'var(--accent)' }} className="text-sm mt-2 block">Launch evaluation â†’</Link>
+          <Link href="/visual-perception/run" style={{ color: 'var(--accent)' }} className="text-sm mt-2 block">Launch evaluation â†'</Link>
         </div>
       )}
 
@@ -174,7 +176,7 @@ export default function VPMMEPage() {
       <div className="kpi-card" style={{ borderLeft: '3px solid #06b6d4' }}>
         <h4 className="text-xs font-semibold mb-2" style={{ color: '#06b6d4' }}>MME Scoring</h4>
         <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-          Official MME score per category = accuracyÃ—100 + plus_scoreÃ—100, where plus_score credits
+          Official MME score per category = accuracyÃ--100 + plus_scoreÃ--100, where plus_score credits
           image pairs where <em>both</em> questions are answered correctly. Total score is the sum across
           all categories (max ~3,000 for 14 categories at perfect accuracy with all pairs correct).
         </p>

@@ -110,7 +110,7 @@ export default function VPRunPage() {
               <li>â€¢ validate-data: checks datasets only, no model needed</li>
             </ul>
             <Link href="/visual-perception/datasets" className="text-xs mt-2 block" style={{ color: 'var(--accent)' }}>
-              Check dataset status â†’
+              Check dataset status â†'
             </Link>
           </div>
 
@@ -139,7 +139,7 @@ export default function VPRunPage() {
                 </span>
                 <code className="text-xs" style={{ color: 'var(--text-muted)' }}>job:{job.job_id}</code>
                 {job.status === 'running' && (
-                  <span className="text-xs animate-pulse" style={{ color: '#f59e0b' }}>â— polling</span>
+                  <span className="text-xs animate-pulse" style={{ color: '#f59e0b' }}>â-- polling</span>
                 )}
               </div>
               <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>{job.message}</p>
@@ -149,7 +149,7 @@ export default function VPRunPage() {
               {job.stdout_tail.length > 0 && (
                 <div>
                   <button onClick={() => setPollLog(v => !v)} className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                    {pollLog ? 'â–¼ Hide log' : 'â–¶ Show log'}
+                    {pollLog ? 'â-¼ Hide log' : 'â-¶ Show log'}
                   </button>
                   {pollLog && (
                     <pre className="text-xs p-3 rounded overflow-auto max-h-64"
@@ -163,8 +163,8 @@ export default function VPRunPage() {
               {job.status === 'completed' && (
                 <div className="mt-3 p-2 rounded" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}>
                   <p className="text-xs" style={{ color: '#22c55e' }}>
-                    âœ“ Done. Results written to <code>results/visual_perception/</code>.{' '}
-                    <Link href="/visual-perception" style={{ color: '#22c55e' }}>View Overview â†’</Link>
+                    âœ" Done. Results written to <code>results/visual_perception/</code>.{' '}
+                    <Link href="/visual-perception" style={{ color: '#22c55e' }}>View Overview â†'</Link>
                   </p>
                 </div>
               )}

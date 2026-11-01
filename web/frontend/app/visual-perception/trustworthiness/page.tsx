@@ -15,8 +15,8 @@ const COND_LABELS: Record<string, string> = {
 };
 
 const TI_DIMENSIONS = [
-  { key: 'ti_hallucination', label: 'Hallucination', color: '#ef4444', desc: '1 âˆ’ hallucination_rate (higher = fewer hallucinations)' },
-  { key: 'ti_bias', label: 'Bias', color: '#8b5cf6', desc: 'N/A for POPE/MME (binary tasks have no socio-cultural bias axis)' },
+  { key: 'ti_hallucination', label: 'Hallucination', color: '#ef4444', desc: '1 - hallucination_rate (higher = fewer hallucinations)' },
+  { key: 'ti_bias', label: 'Bias', color: '#8b5cf6', desc: 'N/A for POPE/MME (binary tasks)' },
   { key: 'ti_robustness', label: 'Robustness', color: '#f59e0b', desc: 'Selective accuracy under distribution shift' },
   { key: 'ti_decision', label: 'Decision', color: '#3b82f6', desc: 'Decision reliability: correct-initial rate + correction rate' },
   { key: 'trustworthiness_index', label: 'Overall TI', color: '#22c55e', desc: 'Weighted combination of all four dimensions' },
@@ -32,7 +32,7 @@ function TIBar({ value, color }: { value: number | null; color: string }) {
         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 4, transition: 'width 0.5s' }} />
       </div>
       <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 12, color: 'var(--text-primary)', width: 42, textAlign: 'right' }}>
-        {value != null ? (value * 100).toFixed(1) + '%' : 'â€”'}
+        {value != null ? (value * 100).toFixed(1) + '%' : '--'}
       </span>
     </div>
   );
@@ -46,17 +46,24 @@ export default function VPTrustworthinessPage() {
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    fetch(`${API}/api/visual-perception/runs`).then(r => r.json())
-      .then((data: Run[]) => { setRuns(data); if (data.length > 0) setSelectedRun(data[0].run_id); })
-      .catch(e => setErr(String(e)));
+    fetch(`${API}/api/visual-perception/runs`)
+      .then(r => r.json())
+      .then((data: unknown) => {
+        const rows = Array.isArray(data) ? (data as Run[]) : [];
+        setRuns(rows);
+        if (rows.length > 0) setSelectedRun(rows[0].run_id);
+      })
+      .catch((e: unknown) => setErr(String(e)));
   }, []);
 
   useEffect(() => {
     if (!selectedRun) return;
-    setLoading(true); setCondMetrics([]);
+    setLoading(true);
+    setCondMetrics([]);
     fetch(`${API}/api/visual-perception/runs/${selectedRun}/condition-metrics`)
-      .then(r => r.json()).then(setCondMetrics)
-      .catch(e => setErr(String(e)))
+      .then(r => r.json())
+      .then((data: unknown) => setCondMetrics(Array.isArray(data) ? (data as Array<Record<string, string>>) : []))
+      .catch((e: unknown) => setErr(String(e)))
       .finally(() => setLoading(false));
   }, [selectedRun]);
 
@@ -81,20 +88,27 @@ export default function VPTrustworthinessPage() {
         </p>
       </div>
 
-      {err && <div className="text-xs mb-4 p-2 rounded" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>{err}</div>}
+      {err && (
+        <div className="text-xs mb-4 p-2 rounded" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
+          {err}
+        </div>
+      )}
 
       {runs.length > 0 && (
         <div className="kpi-card mb-4">
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Run:</span>
             {runs.map(r => (
-              <button key={r.run_id} onClick={() => setSelectedRun(r.run_id)}
+              <button
+                key={r.run_id}
+                onClick={() => setSelectedRun(r.run_id)}
                 className="text-xs px-3 py-1 rounded font-mono"
                 style={{
                   background: selectedRun === r.run_id ? 'var(--accent)' : 'rgba(0,0,0,0.3)',
                   color: selectedRun === r.run_id ? 'white' : 'var(--text-secondary)',
                   border: '1px solid var(--border)',
-                }}>
+                }}
+              >
                 {r.run_id}
               </button>
             ))}
@@ -105,11 +119,15 @@ export default function VPTrustworthinessPage() {
       {runs.length === 0 && !err && (
         <div className="kpi-card text-center py-8">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No VP runs found.</p>
-          <Link href="/visual-perception/run" style={{ color: 'var(--accent)' }} className="text-sm mt-2 block">Launch evaluation â†’</Link>
+          <Link href="/visual-perception/run" style={{ color: 'var(--accent)' }} className="text-sm mt-2 block">
+            Launch evaluation
+          </Link>
         </div>
       )}
 
-      {loading && <div className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>Loading TI metricsâ€¦</div>}
+      {loading && (
+        <div className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>Loading TI metrics...</div>
+      )}
 
       {/* Overall TI headline */}
       {!loading && Object.keys(byCondition).length > 0 && (
@@ -120,8 +138,11 @@ export default function VPTrustworthinessPage() {
               return (
                 <div key={c} className="kpi-card text-center" style={{ borderTop: `2px solid ${COND_COLORS[c]}` }}>
                   <div className="text-xs font-bold" style={{ color: COND_COLORS[c] }}>{COND_LABELS[c]}</div>
-                  <div className="text-3xl font-bold mt-1" style={{ color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-                    {ti != null ? (ti * 100).toFixed(1) : 'â€”'}
+                  <div
+                    className="text-3xl font-bold mt-1"
+                    style={{ color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}
+                  >
+                    {ti != null ? (ti * 100).toFixed(1) : '--'}
                   </div>
                   <div className="text-xs" style={{ color: 'var(--text-muted)' }}>TI score</div>
                 </div>
@@ -139,7 +160,9 @@ export default function VPTrustworthinessPage() {
                     <div key={dim.key}>
                       <div className="flex justify-between text-xs mb-1">
                         <span style={{ color: 'var(--text-secondary)' }}>{dim.label}</span>
-                        <span className="text-xs" style={{ color: 'var(--text-muted)', maxWidth: 240, textAlign: 'right' }}>{dim.desc}</span>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)', maxWidth: 240, textAlign: 'right' }}>
+                          {dim.desc}
+                        </span>
                       </div>
                       <TIBar value={numVal(byCondition[c], dim.key)} color={dim.color} />
                     </div>
@@ -154,12 +177,16 @@ export default function VPTrustworthinessPage() {
       {/* Formula */}
       <div className="kpi-card mt-6" style={{ borderLeft: '3px solid #22c55e' }}>
         <h4 className="text-xs font-semibold mb-2" style={{ color: '#22c55e' }}>TI Formula (visual adaptation)</h4>
-        <pre className="text-xs overflow-x-auto" style={{ color: '#93c5fd', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: 6, margin: 0 }}>
-TI = w_h Ã— (1 âˆ’ hallucination_rate)
-   + w_b Ã— ti_bias        (1.0 when bias not applicable)
-   + w_r Ã— selective_acc  (accuracy on non-abstained items)
-   + w_d Ã— decision_reliability
-Default weights: 0.25 each</pre>
+        <pre
+          className="text-xs overflow-x-auto"
+          style={{ color: '#93c5fd', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: 6, margin: 0 }}
+        >
+{`TI = w_h x (1 - hallucination_rate)
+   + w_b x ti_bias        (1.0 when bias not applicable)
+   + w_r x selective_acc  (accuracy on non-abstained items)
+   + w_d x decision_reliability
+Default weights: 0.25 each`}
+        </pre>
       </div>
     </div>
   );

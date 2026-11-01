@@ -42,16 +42,17 @@ export default function VPConditionsPage() {
     setLoading(true); setMetrics({});
     fetch(`${API}/api/visual-perception/runs/${selectedRun}/condition-metrics`)
       .then(r => r.json())
-      .then((rows: Array<Record<string, string>>) => {
+      .then((data: unknown) => {
+        const rows = Array.isArray(data) ? (data as Array<Record<string, string>>) : [];
         const m: Record<string, Record<string, string>> = {};
         rows.forEach(row => { if (row.condition) m[row.condition] = row; });
         setMetrics(m);
-      }).catch(e => setErr(String(e)))
+      }).catch((e: unknown) => setErr(String(e)))
       .finally(() => setLoading(false));
   }, [selectedRun]);
 
   function fmtMetric(val: string | undefined, key: string): string {
-    if (!val || val === '') return 'â€”';
+    if (!val || val === '') return 'â€"';
     const n = parseFloat(val);
     if (isNaN(n)) return val;
     if (key === 'latency_mean') return n.toFixed(2) + 's';
@@ -80,7 +81,7 @@ export default function VPConditionsPage() {
       <div className="mb-6">
         <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Condition Comparison</h2>
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-          Side-by-side metrics for all four experimental conditions. Î” is relative to Baseline.
+          Side-by-side metrics for all four experimental conditions. Î" is relative to Baseline.
         </p>
       </div>
 
@@ -109,7 +110,7 @@ export default function VPConditionsPage() {
       {runs.length === 0 && !err && (
         <div className="kpi-card text-center py-8">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No VP runs found.</p>
-          <Link href="/visual-perception/run" className="text-sm mt-2 block" style={{ color: 'var(--accent)' }}>Launch an evaluation â†’</Link>
+          <Link href="/visual-perception/run" className="text-sm mt-2 block" style={{ color: 'var(--accent)' }}>Launch an evaluation â†'</Link>
         </div>
       )}
 
@@ -123,7 +124,7 @@ export default function VPConditionsPage() {
               <div key={c} className="kpi-card text-center" style={{ borderTop: `2px solid ${COND_COLORS[c]}` }}>
                 <div className="text-xs font-bold" style={{ color: COND_COLORS[c] }}>{COND_LABELS[c]}</div>
                 <div className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-                  {metrics[c] ? fmtMetric(metrics[c].accuracy, 'accuracy') : 'â€”'}
+                  {metrics[c] ? fmtMetric(metrics[c].accuracy, 'accuracy') : 'â€"'}
                 </div>
                 <div className="text-xs" style={{ color: 'var(--text-muted)' }}>accuracy</div>
               </div>

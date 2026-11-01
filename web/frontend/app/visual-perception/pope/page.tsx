@@ -26,8 +26,8 @@ export default function VPPOPEPage() {
 
   useEffect(() => {
     fetch(`${API}/api/visual-perception/runs`).then(r => r.json())
-      .then((data: Run[]) => { setRuns(data); if (data.length > 0) setSelectedRun(data[0].run_id); })
-      .catch(e => setErr(String(e)));
+      .then((data: unknown) => { const rows = Array.isArray(data) ? (data as Run[]) : []; setRuns(rows); if (rows.length > 0) setSelectedRun(rows[0].run_id); })
+      .catch((e: unknown) => setErr(String(e)));
   }, []);
 
   useEffect(() => {
@@ -35,14 +35,15 @@ export default function VPPOPEPage() {
     setLoading(true); setCategoryMetrics([]);
     fetch(`${API}/api/visual-perception/runs/${selectedRun}/category-metrics`)
       .then(r => r.json())
-      .then((rows: Array<Record<string, string>>) => {
+      .then((data: unknown) => {
+        const rows = Array.isArray(data) ? (data as Array<Record<string, string>>) : [];
         setCategoryMetrics(rows.filter(r => r.benchmark === 'pope' || !r.benchmark));
-      }).catch(e => setErr(String(e)))
+      }).catch((e: unknown) => setErr(String(e)))
       .finally(() => setLoading(false));
   }, [selectedRun]);
 
   function pct(v: string | undefined) {
-    if (!v) return 'â€”';
+    if (!v) return 'â€"';
     const n = parseFloat(v);
     return isNaN(n) ? v : (n * 100).toFixed(1) + '%';
   }
@@ -61,7 +62,7 @@ export default function VPPOPEPage() {
       <div className="mb-6">
         <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>POPE Hallucination Evaluation</h2>
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-          Polling-based Object Probing Evaluation â€” binary yes/no answers across three difficulty categories.
+          Polling-based Object Probing Evaluation â€" binary yes/no answers across three difficulty categories.
           Lower hallucination rate = better. Dataset: MSCOCO val2014 images.
         </p>
       </div>
@@ -91,7 +92,7 @@ export default function VPPOPEPage() {
       {runs.length === 0 && !err && (
         <div className="kpi-card text-center py-8">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No VP runs found.</p>
-          <Link href="/visual-perception/run" style={{ color: 'var(--accent)' }} className="text-sm mt-2 block">Launch evaluation â†’</Link>
+          <Link href="/visual-perception/run" style={{ color: 'var(--accent)' }} className="text-sm mt-2 block">Launch evaluation â†'</Link>
         </div>
       )}
 
@@ -143,7 +144,7 @@ export default function VPPOPEPage() {
                         <td className="py-2 pr-4 text-right font-mono" style={{ color: 'var(--text-secondary)' }}>{pct(row.precision)}</td>
                         <td className="py-2 pr-4 text-right font-mono" style={{ color: 'var(--text-secondary)' }}>{pct(row.recall)}</td>
                         <td className="py-2 pr-4 text-right font-mono" style={{ color: '#ef4444' }}>{pct(row.hallucination_rate)}</td>
-                        <td className="py-2 text-right" style={{ color: 'var(--text-muted)' }}>{row.item_count ?? 'â€”'}</td>
+                        <td className="py-2 text-right" style={{ color: 'var(--text-muted)' }}>{row.item_count ?? 'â€"'}</td>
                       </tr>
                     );
                   })}
@@ -158,7 +159,7 @@ export default function VPPOPEPage() {
       <div className="kpi-card mt-2" style={{ borderLeft: '3px solid #8b5cf6' }}>
         <h4 className="text-xs font-semibold mb-2" style={{ color: '#8b5cf6' }}>Methodology Note</h4>
         <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-          POPE asks "Is there a [object] in the image?" â€” a binary yes/no question for each image.
+          POPE asks "Is there a [object] in the image?" â€" a binary yes/no question for each image.
           Hallucination rate = fraction of questions where the model affirms a non-existent object.
           Three difficulty levels: <em>random</em> (easiest), <em>popular</em> (objects often co-occurring),
           <em>adversarial</em> (objects most likely hallucinated). Measured pre- and post-MITCF intervention.

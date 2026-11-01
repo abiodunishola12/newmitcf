@@ -23,7 +23,7 @@ const CONDITION_INFO = [
 ];
 
 const VP_LINKS = [
-  { href: '/visual-perception/pope', label: 'POPE Evaluation', desc: 'Object hallucination â€” random, popular, adversarial', color: '#8b5cf6' },
+  { href: '/visual-perception/pope', label: 'POPE Evaluation', desc: 'Object hallucination â€" random, popular, adversarial', color: '#8b5cf6' },
   { href: '/visual-perception/mme', label: 'MME Evaluation', desc: '14-category visual perception with official scoring', color: '#06b6d4' },
   { href: '/visual-perception/conditions', label: 'Condition Comparison', desc: 'Side-by-side metrics for all four conditions', color: '#f59e0b' },
   { href: '/visual-perception/trustworthiness', label: 'Trustworthiness Index', desc: 'TI: hallucination + bias + robustness + decision', color: '#22c55e' },
@@ -63,7 +63,7 @@ export default function VPOverviewPage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Visual Perception â€” MITCF Evaluation</h2>
+        <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Visual Perception â€" MITCF Evaluation</h2>
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
           Qwen2.5-VL-3B-Instruct evaluated on POPE + MME benchmarks under four paired conditions.
           Targeting Elsevier <em>Displays</em> Special Issue: "Perceptual AI Systems in the Era of Large Models."
@@ -78,7 +78,7 @@ export default function VPOverviewPage() {
             ready={datasetStatus.pope.ready}
             detail={datasetStatus.pope.ready
               ? `${datasetStatus.pope.image_count.toLocaleString()} images Â· 3 annotation files`
-              : 'Annotations or images missing â€” see Dataset Setup'}
+              : 'Annotations or images missing â€" see Dataset Setup'}
             href="/visual-perception/datasets"
           />
           <DatasetCard
@@ -86,7 +86,7 @@ export default function VPOverviewPage() {
             ready={datasetStatus.mme.ready}
             detail={datasetStatus.mme.ready
               ? `${datasetStatus.mme.categories_found} / ${datasetStatus.mme.categories_total} categories found`
-              : `${datasetStatus.mme.categories_found} / ${datasetStatus.mme.categories_total} categories found â€” incomplete`}
+              : `${datasetStatus.mme.categories_found} / ${datasetStatus.mme.categories_total} categories found â€" incomplete`}
             href="/visual-perception/datasets"
           />
         </div>
@@ -142,7 +142,7 @@ export default function VPOverviewPage() {
                   <th className="text-right py-2 pr-4">Items</th>
                   <th className="text-right py-2 pr-4">Baseline Acc</th>
                   <th className="text-right py-2 pr-4">Full MITCF Acc</th>
-                  <th className="text-right py-2 pr-4">Î”</th>
+                  <th className="text-right py-2 pr-4">Î"</th>
                   <th className="text-left py-2">Extras</th>
                 </tr>
               </thead>
@@ -153,17 +153,17 @@ export default function VPOverviewPage() {
                     <tr key={r.run_id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <td className="py-2 pr-4 font-mono" style={{ color: 'var(--accent)' }}>{r.run_id}</td>
                       <td className="py-2 pr-4" style={{ color: 'var(--text-secondary)' }}>
-                        {r.created_at ? new Date(r.created_at).toLocaleString() : 'â€”'}
+                        {r.created_at ? new Date(r.created_at).toLocaleString() : 'â€"'}
                       </td>
                       <td className="py-2 pr-4 text-right" style={{ color: 'var(--text-primary)' }}>{r.item_count}</td>
                       <td className="py-2 pr-4 text-right font-mono" style={{ color: 'var(--text-secondary)' }}>
-                        {r.baseline_accuracy != null ? (r.baseline_accuracy * 100).toFixed(1) + '%' : 'â€”'}
+                        {r.baseline_accuracy != null ? (r.baseline_accuracy * 100).toFixed(1) + '%' : 'â€"'}
                       </td>
                       <td className="py-2 pr-4 text-right font-mono" style={{ color: '#22c55e' }}>
-                        {r.full_mitcf_accuracy != null ? (r.full_mitcf_accuracy * 100).toFixed(1) + '%' : 'â€”'}
+                        {r.full_mitcf_accuracy != null ? (r.full_mitcf_accuracy * 100).toFixed(1) + '%' : 'â€"'}
                       </td>
                       <td className="py-2 pr-4 text-right font-mono" style={{ color: pctColor(delta) }}>
-                        {delta != null ? (parseFloat(delta) > 0 ? '+' : '') + delta + '%' : 'â€”'}
+                        {delta != null ? (parseFloat(delta) > 0 ? '+' : '') + delta + '%' : 'â€"'}
                       </td>
                       <td className="py-2 flex gap-2">
                         {r.has_robustness && <span className="badge" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>robustness</span>}
@@ -190,13 +190,13 @@ function DatasetCard({ title, ready, detail, href }: { title: string; ready: boo
           background: ready ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
           color: ready ? '#22c55e' : '#ef4444',
         }}>
-          {ready ? 'âœ“ Ready' : 'âœ— Missing'}
+          {ready ? 'âœ" Ready' : 'âœ-- Missing'}
         </span>
       </div>
       <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{detail}</div>
       {!ready && (
         <Link href={href} className="text-xs mt-2 block" style={{ color: 'var(--accent)' }}>
-          View download instructions â†’
+          View download instructions â†'
         </Link>
       )}
     </div>
